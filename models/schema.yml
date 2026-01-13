@@ -38,7 +38,7 @@ models:
         description: "Subscription end date (9999-12-31 for subscriptions without an end date)"
         data_tests:
         - dbt_utils.expression_is_true:
-              expression: ">= start_date"
+              expression: "> start_date"
 
   - name: stg_plans
     description: "Staging model for plan with standardized data formats"

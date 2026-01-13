@@ -105,4 +105,4 @@ round(100.0 * coalesce(churned_users * 1.0 / nullif(active_previous_month, 0), 0
 - Uniqueness and not-null tests on primary keys in staging models
 - Grain tests: Unique combination on (`customer_id`, `month_start_date`) for `fct_monthly_subscriptions`
 - Value validation: accepted values for `subscription_status`
-- Logical constraints: end_date >= start_date, monthly_price > 0
+- Logical constraints: end_date = start_date, monthly_price > 0
