@@ -1,0 +1,144 @@
+
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    description: "Raw data loaded through dbt seeds"
+    tables:
+      - name: customers
+        description: "Customer data which includes id, signup_date, subscription status and region"
+      - name: subscriptions
+        description: "Subscription records by customer_id, plan_id and subscription start and end dates" 
+      - name: plans
+        description: "Plan types and price"
+
+models:
+  - name: stg_subscriptions
+    description: "Staging model for subscriptions with standardized data formats"
+    columns:
+      - name: subscription_id
+        description: "Unique subscription identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to customers"
+        data_tests:
+          - not_null
+      - name: plan_id
+        description: "Foreign key to plans"
+        data_tests:
+          - not_null
+      - name: start_date
+        description: "Subscription start date"
+        data_tests:
+          - not_null
+      - name: end_date
+        description: "Subscription end date (9999-12-31 for subscriptions without an end date)"
+        data_tests:
+        - dbt_utils.expression_is_true:
+              expression: ">= start_date"
+
+  - name: stg_plans
+    description: "Staging model for plan with standardized data formats"
+    columns:
+      - name: plan_id
+        description: "Unique plan identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: plan_name
+        description: "Subscription plan name e.g.(Starter, Pro)"
+        data_tests:
+          - not_null
+      - name: monthly_price
+        description: "Monthly subscription price in USD"
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+  - name: stg_customers
+    description: "Staging model for customer data with standardized data formats"
+    columns:
+    - name: customer_id
+      description: "Unique customer identifier"
+      data_tests:
+        - unique
+        - not_null
+    - name: signup_date
+      description: "Date customer signed up"
+      data_tests:
+        - not_null
+    - name: subscription_status
+      description: "Status of customer subscription e.g(active, cancelled)"
+      data_tests:
+        - not_null
+    - name: region
+      description: "Customer's geographic region"
+
+  - name: month_date
+    description: "Date table with start and end month dates"
+
+  - name: fct_monthly_subscriptions
+    description: |
+      Monthly snapshot of customers subscriptions status at the customer and month grain.
+      Each row represents one customer's subscrition state per month.
+      Subscription status is determined by subscription start/end dates.
+      
+      Grain: Customer-Month
+      Updates: Monthly
+    columns:
+    - name: month_start_date
+      description: "First day of the month"
+    - name: customer_id
+      description: "Unique customer identifier"
+    - name: subscription_status
+      description: |
+        Customer subscription status for this month.
+        - 'Active': Subscription was active during the month
+        - 'Cancelled': Subscription was cancelled in the previous month.
+      data_tests:
+        - accepted_values:
+            values: ['Active', 'Cancelled']
+    - name: region
+      description: "Customer's geographic region"
+    - name: plan_name
+      description: "Subscription plan name e.g.(Starter, Pro)"
+    - name: monthly_price
+      description: Monthly subscription price in USD
+
+  - name: fct_monthly_metrics
+    description: |
+      Aggregated monthly subscription metrics for reporting.
+
+      Grain: Monthly
+      Key Metrics:
+      - Active Customers: Count of customers with active subscriptions
+      - Monthly Recurring Revenue (MRR): Sum of subscription prices for active customers
+      - Logo Churn Rate: Percentage of customers who cancelled from the previous month.
+
+      Updates: Monthly
+
+    columns:
+    - name: month_start_date
+      description: "First day of the month"
+    - name: active_customers
+      description: "Count of customers with active subscriptions this month"
+      data_tests:
+        - not_null
+    - name: monthly_recurring_revenue
+      description: |
+        Total monthly recurring revenue from all active subscriptions.
+        Calculated as sum(monthly_price) where subscription_status = 'Active'
+      data_tests:
+        - not_null
+    - name: logo_churn_rate
+      description: |
+        Percentage of customers who churned this month.
+        Calcuated as (Customers who went from Active -> Cancelled) / Customers active last month) * 100
+      
+
+
+        

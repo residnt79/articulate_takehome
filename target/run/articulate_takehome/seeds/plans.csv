@@ -1,0 +1,13 @@
+
+    
+    
+    
+    create table "dev"."main_raw"."plans" ("id" text,"plan_name" text,"monthly_price" integer)
+  ;
+    -- dbt seed --
+    
+          COPY "dev"."main_raw"."plans" FROM 'C:\projects\articulate_take_home\articulate_takehome\seeds\plans.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+        
+
+;
+  
