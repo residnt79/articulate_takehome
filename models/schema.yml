@@ -71,7 +71,7 @@ models:
       description: "Date customer signed up"
       data_tests:
         - not_null
-    - name: subscription_status
+    - name: customer_status
       description: "Status of customer subscription e.g(active, cancelled)"
       data_tests:
         - not_null
@@ -89,6 +89,12 @@ models:
       
       Grain: Customer-Month
       Updates: Monthly
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: 
+            - customer_id
+            - month_start_date
     columns:
     - name: month_start_date
       description: "First day of the month"
@@ -98,7 +104,7 @@ models:
       description: |
         Customer subscription status for this month.
         - 'Active': Subscription was active during the month
-        - 'Cancelled': Subscription was cancelled in the previous month.
+        - 'Cancelled': Customer has no active subscription overlapping the month
       data_tests:
         - accepted_values:
             values: ['Active', 'Cancelled']

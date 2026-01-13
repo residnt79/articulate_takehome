@@ -1,7 +1,9 @@
 
     
     
-    truncate table "dev"."main_raw"."customers";
+    
+    create table "dev"."main_raw"."customers" ("id" text,"signup_date" date,"status" text,"region" text)
+  ;
     -- dbt seed --
     
           COPY "dev"."main_raw"."customers" FROM 'C:\projects\articulate_take_home\articulate_takehome\seeds\customers.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')

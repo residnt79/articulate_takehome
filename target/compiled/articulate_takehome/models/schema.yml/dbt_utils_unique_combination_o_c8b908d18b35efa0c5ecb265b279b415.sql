@@ -1,0 +1,20 @@
+
+
+
+
+
+
+with validation_errors as (
+
+    select
+        customer_id, month_start_date
+    from "dev"."main"."fct_monthly_subscriptions"
+    group by customer_id, month_start_date
+    having count(*) > 1
+
+)
+
+select *
+from validation_errors
+
+

@@ -5,7 +5,7 @@ with monthly_subscriptions as (
 )
 , aggregations as (
     select month_start_date
-        , count(case when subscription_status = 'Active' then customer_id end) as active_customers
+        , count(distinct case when subscription_status = 'Active' then customer_id end) as active_customers
         , sum(case when subscription_status = 'Active' then monthly_price else 0 end) as monthly_recurring_revenue
         , count(case when subscription_status = 'Cancelled' and previous_month_status = 'Active' then customer_id end) as churned_users
         , count(case when previous_month_status = 'Active' then customer_id end) as active_previous_month
